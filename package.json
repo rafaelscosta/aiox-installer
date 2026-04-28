@@ -1,0 +1,27 @@
+{
+  "name": "@rafaelscosta/aiox-installer",
+  "version": "1.0.0",
+  "description": "Wizard CLI to install the AIOX Cockpit into an AIOS project",
+  "bin": {
+    "aiox-installer": "./bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rafaelscosta/aiox-installer.git"
+  },
+  "keywords": [
+    "aiox",
+    "aios",
+    "cockpit",
+    "installer",
+    "wizard"
+  ]
+}
