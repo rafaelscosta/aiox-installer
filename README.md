@@ -13,6 +13,21 @@ npx github:rafaelscosta/aiox-installer
 
 Isso é tudo. O wizard guia o resto.
 
+### Windows / PowerShell
+
+Use PowerShell e mantenha caminhos com espaços entre aspas:
+
+```powershell
+Set-Location -LiteralPath "C:\caminho\do\seu-projeto-aios"
+npx github:rafaelscosta/aiox-installer
+```
+
+Também funciona passando o target explicitamente:
+
+```powershell
+npx github:rafaelscosta/aiox-installer --target "C:\caminho\do\seu-projeto-aios" --yes
+```
+
 ## O que ele faz
 
 1. **Detecta** seu projeto AIOS (procura por `.aiox-core/` subindo do CWD)
@@ -33,6 +48,9 @@ Isso é tudo. O wizard guia o resto.
 | GitHub CLI (`gh`) | Acesso ao repo privado do cockpit | https://cli.github.com/ |
 | `gh auth login` | Autenticação com GitHub | `gh auth login` |
 | Bun 1+ | Engine do cockpit | https://bun.sh/ |
+
+No Windows, reinicie o PowerShell depois de instalar Node, GitHub CLI ou Bun
+para garantir que o `PATH` novo foi carregado.
 
 > Se `gh` não estiver autenticado, o wizard explica o que fazer e aborta —
 > nada é alterado no seu projeto.
@@ -61,6 +79,15 @@ npx github:rafaelscosta/aiox-installer --target ~/projetos/meu-aios --yes
 
 # Instala uma versão específica
 npx github:rafaelscosta/aiox-installer --version v1.1
+```
+
+PowerShell:
+
+```powershell
+Set-Location -LiteralPath "C:\projetos\meu-aios"
+npx github:rafaelscosta/aiox-installer
+
+npx github:rafaelscosta/aiox-installer --target "C:\projetos\meu-aios" --yes
 ```
 
 ## Atualização
@@ -95,7 +122,8 @@ Depois rode o wizard de novo.
 ### `Bun not found`
 
 O wizard segue sem instalar deps da engine, mas avisa. Instale o Bun e
-rode manualmente:
+rode manualmente. No Windows, siga o instalador atual em https://bun.sh/ e
+reinicie o PowerShell antes de testar `bun --version`.
 
 ```bash
 # macOS / Linux
@@ -104,6 +132,26 @@ curl -fsSL https://bun.sh/install | bash
 # depois
 cd ~/projetos/meu-aios/apps/cockpit/engine && bun install
 ```
+
+PowerShell:
+
+```powershell
+Set-Location -LiteralPath "C:\projetos\meu-aios\apps\cockpit\engine"
+bun install
+```
+
+### Windows: `gh`, `npm` ou `bun` instalado, mas não detectado
+
+Feche e abra o PowerShell. Se continuar falhando, confirme:
+
+```powershell
+gh --version
+npm --version
+bun --version
+```
+
+O wizard v1.0.1 resolve comandos pelo `PATHEXT` do Windows, então executáveis
+como `npm.cmd` passam a ser detectados corretamente.
 
 ### `Permission denied` ao clonar
 

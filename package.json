@@ -1,9 +1,12 @@
 {
   "name": "@rafaelscosta/aiox-installer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Wizard CLI to install the AIOX Cockpit into an AIOS project",
   "bin": {
     "aiox-installer": "./bin/install.js"
+  },
+  "scripts": {
+    "test": "node --test"
   },
   "files": [
     "bin/",

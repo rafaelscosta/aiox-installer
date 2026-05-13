@@ -12,9 +12,10 @@
 'use strict';
 
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const readline = require('node:readline');
-const { execSync, spawnSync } = require('node:child_process');
+const { spawnSync } = require('node:child_process');
 
 const COCKPIT_REPO = 'rafaelscosta/aiox-cockpit';
 const DEFAULT_VERSION = 'v1.0-imersao';
@@ -37,6 +38,93 @@ function ok(msg) { console.log(`${c.green}[aiox]${c.reset} ${msg}`); }
 function warn(msg) { console.log(`${c.yellow}[aiox]${c.reset} ${msg}`); }
 function err(msg) { console.error(`${c.red}[aiox]${c.reset} ${msg}`); }
 function step(n, total, msg) { console.log(`\n${c.bold}${c.magenta}[${n}/${total}]${c.reset} ${c.bold}${msg}${c.reset}`); }
+
+function isWindows(platform = process.platform) {
+  return platform === 'win32';
+}
+
+function stripWrappingQuotes(value) {
+  const text = String(value || '').trim();
+  if (text.length >= 2) {
+    const first = text[0];
+    const last = text[text.length - 1];
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+      return text.slice(1, -1);
+    }
+  }
+  return text;
+}
+
+function expandHome(inputPath, homeDir = os.homedir()) {
+  const cleanPath = stripWrappingQuotes(inputPath);
+  if (cleanPath === '~') return homeDir;
+  if (cleanPath.startsWith('~/') || cleanPath.startsWith('~\\')) {
+    return path.join(homeDir, cleanPath.slice(2));
+  }
+  return cleanPath;
+}
+
+function resolveInputPath(inputPath) {
+  return path.resolve(expandHome(inputPath));
+}
+
+function getWindowsPathExt(env = process.env) {
+  return String(env.PATHEXT || '.EXE;.CMD;.BAT;.COM')
+    .split(';')
+    .map((ext) => ext.trim())
+    .filter(Boolean);
+}
+
+function firstWhereMatch(command) {
+  const probe = spawnSync('where.exe', [command], {
+    stdio: ['ignore', 'pipe', 'ignore'],
+    encoding: 'utf8',
+  });
+  if (probe.status !== 0 || !probe.stdout) return null;
+  return probe.stdout.split(/\r?\n/).map((line) => line.trim()).find(Boolean) || null;
+}
+
+function findCommand(commandName) {
+  if (isWindows()) {
+    if (path.extname(commandName)) return firstWhereMatch(commandName);
+    for (const ext of getWindowsPathExt()) {
+      const match = firstWhereMatch(`${commandName}${ext}`);
+      if (match) return match;
+    }
+    return firstWhereMatch(commandName);
+  }
+
+  const probe = spawnSync('which', [commandName], {
+    stdio: ['ignore', 'pipe', 'ignore'],
+    encoding: 'utf8',
+  });
+  if (probe.status !== 0 || !probe.stdout) return null;
+  return probe.stdout.split(/\r?\n/).map((line) => line.trim()).find(Boolean) || null;
+}
+
+function displayCommand(commandPath, fallbackName) {
+  return commandPath || fallbackName;
+}
+
+function quoteWindowsCmdArg(value) {
+  const text = String(value);
+  if (text === '') return '""';
+  if (!/[ \t&()^|<>"]/.test(text)) return text;
+  return `"${text.replace(/"/g, '\\"')}"`;
+}
+
+function requiresWindowsShell(commandPath, platform = process.platform) {
+  return isWindows(platform) && /\.(cmd|bat)$/i.test(commandPath);
+}
+
+function spawnCommand(commandPath, args, opts = {}) {
+  if (requiresWindowsShell(commandPath)) {
+    const shell = process.env.ComSpec || 'cmd.exe';
+    const commandLine = [commandPath, ...args].map(quoteWindowsCmdArg).join(' ');
+    return spawnSync(shell, ['/d', '/s', '/c', commandLine], opts);
+  }
+  return spawnSync(commandPath, args, opts);
+}
 
 function parseArgs(argv) {
   const args = { target: null, version: null, yes: false, help: false };
@@ -98,7 +186,7 @@ function isAiosRoot(dir) {
 }
 
 function findAiosRoot(startDir) {
-  let dir = path.resolve(startDir);
+  let dir = resolveInputPath(startDir);
   for (let i = 0; i < 12; i++) {
     if (isAiosRoot(dir)) return dir;
     const parent = path.dirname(dir);
@@ -109,15 +197,18 @@ function findAiosRoot(startDir) {
 }
 
 function commandExists(cmd) {
-  const r = spawnSync('which', [cmd], { stdio: 'ignore' });
-  return r.status === 0;
+  return Boolean(findCommand(cmd));
 }
 
 function checkGhAuth() {
-  if (!commandExists('gh')) {
+  const ghCommand = findCommand('gh');
+  if (!ghCommand) {
     return { ok: false, reason: 'gh CLI not installed. See https://cli.github.com/' };
   }
-  const r = spawnSync('gh', ['auth', 'status'], { stdio: 'pipe' });
+  const r = spawnCommand(ghCommand, ['auth', 'status'], { stdio: 'pipe' });
+  if (r.error) {
+    return { ok: false, reason: `gh could not be executed: ${r.error.message}` };
+  }
   if (r.status !== 0) {
     return { ok: false, reason: "gh not authenticated. Run 'gh auth login' first." };
   }
@@ -125,7 +216,17 @@ function checkGhAuth() {
 }
 
 function runInherit(cmd, args, opts = {}) {
-  const r = spawnSync(cmd, args, { stdio: 'inherit', ...opts });
+  const commandPath = findCommand(cmd);
+  if (!commandPath) {
+    throw new Error(`Command not found: ${cmd}`);
+  }
+  const r = spawnCommand(commandPath, args, { stdio: 'inherit', ...opts });
+  if (r.error) {
+    throw new Error(`Command failed to start: ${displayCommand(commandPath, cmd)} (${r.error.message})`);
+  }
+  if (r.signal) {
+    throw new Error(`Command terminated by signal ${r.signal}: ${cmd} ${args.join(' ')}`);
+  }
   if (r.status !== 0) {
     throw new Error(`Command failed (exit ${r.status}): ${cmd} ${args.join(' ')}`);
   }
@@ -145,6 +246,31 @@ function copyEnvIfMissing(src, dst) {
   return true;
 }
 
+function printNextSteps(cockpitDir) {
+  log('');
+  log(`${c.bold}Next steps:${c.reset}`);
+  log(`  1. Edit credentials:`);
+  log(`     ${c.dim}${path.join(cockpitDir, '.env.development')}${c.reset}`);
+  log(`     ${c.dim}${path.join(cockpitDir, 'engine', '.env')}${c.reset}`);
+  log(`  2. Start the cockpit:`);
+  if (isWindows()) {
+    log(`     ${c.cyan}Set-Location -LiteralPath "${cockpitDir}"${c.reset}`);
+    log(`     ${c.cyan}npm run dev${c.reset}`);
+  } else {
+    log(`     ${c.cyan}cd ${cockpitDir} && npm run dev${c.reset}`);
+  }
+  log(`  3. Open the UI:`);
+  log(`     ${c.cyan}http://localhost:5173${c.reset}`);
+  log('');
+  if (isWindows()) {
+    log(`Port :4002 occupied? Override in PowerShell with:`);
+    log(`     ${c.cyan}$env:ENGINE_PORT="4042"; npm run dev${c.reset}`);
+  } else {
+    log(`Port :4002 occupied? Override with ${c.cyan}ENGINE_PORT=4042 npm run dev${c.reset}.`);
+  }
+  log('');
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return 0; }
@@ -161,7 +287,7 @@ async function main() {
   try {
     // Step 1: locate AIOS project
     step(1, TOTAL_STEPS, 'Locating AIOS project root');
-    let aiosRoot = args.target ? path.resolve(args.target) : findAiosRoot(process.cwd());
+    let aiosRoot = args.target ? resolveInputPath(args.target) : findAiosRoot(process.cwd());
     if (aiosRoot && !isAiosRoot(aiosRoot)) {
       err(`Provided --target does not contain .aiox-core/: ${aiosRoot}`);
       return 1;
@@ -170,7 +296,7 @@ async function main() {
       warn('No .aiox-core/ found walking up from current directory.');
       const inputPath = await ask(rl, 'Path to your AIOS project root');
       if (!inputPath) { err('No path provided. Aborting.'); return 1; }
-      aiosRoot = path.resolve(inputPath);
+      aiosRoot = resolveInputPath(inputPath);
       if (!isAiosRoot(aiosRoot)) {
         err(`No .aiox-core/ found at ${aiosRoot}. Aborting.`);
         return 1;
@@ -202,6 +328,9 @@ async function main() {
       return 1;
     }
     ok('gh CLI authenticated');
+    if (isWindows()) {
+      info('Windows detected — using PATHEXT-aware command resolution.');
+    }
 
     // Step 4: clone (or update)
     step(4, TOTAL_STEPS, `Cloning ${COCKPIT_REPO} into apps/cockpit/`);
@@ -240,7 +369,12 @@ async function main() {
     } else {
       warn('Bun not found. Skipping engine deps.');
       warn('Install Bun from https://bun.sh, then run:');
-      warn(`  cd ${cockpitDir}/engine && bun install`);
+      if (isWindows()) {
+        warn(`  Set-Location -LiteralPath "${path.join(cockpitDir, 'engine')}"`);
+        warn('  bun install');
+      } else {
+        warn(`  cd ${path.join(cockpitDir, 'engine')} && bun install`);
+      }
     }
 
     // Step 6: setup .env files
@@ -257,18 +391,7 @@ async function main() {
     // Step 7: done
     step(7, TOTAL_STEPS, 'Done');
     ok(`Cockpit installed at: ${cockpitDir}`);
-    log('');
-    log(`${c.bold}Next steps:${c.reset}`);
-    log(`  1. Edit credentials:`);
-    log(`     ${c.dim}${cockpitDir}/.env.development${c.reset}`);
-    log(`     ${c.dim}${cockpitDir}/engine/.env${c.reset}`);
-    log(`  2. Start the cockpit:`);
-    log(`     ${c.cyan}cd ${cockpitDir} && npm run dev${c.reset}`);
-    log(`  3. Open the UI:`);
-    log(`     ${c.cyan}http://localhost:5173${c.reset}`);
-    log('');
-    log(`Port :4002 occupied? Override with ${c.cyan}ENGINE_PORT=4042 npm run dev${c.reset}.`);
-    log('');
+    printNextSteps(cockpitDir);
     return 0;
   } catch (e) {
     err(`Wizard failed: ${e.message}`);
@@ -278,7 +401,21 @@ async function main() {
   }
 }
 
-main().then((code) => process.exit(code || 0)).catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().then((code) => process.exit(code || 0)).catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  expandHome,
+  findAiosRoot,
+  getWindowsPathExt,
+  isWindows,
+  parseArgs,
+  quoteWindowsCmdArg,
+  requiresWindowsShell,
+  resolveInputPath,
+  stripWrappingQuotes,
+};
