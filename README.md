@@ -35,7 +35,7 @@ npx github:rafaelscosta/aiox-installer --target "C:\caminho\do\seu-projeto-aios"
 3. **Verifica** que `gh` CLI está autenticado (necessário porque o repo do cockpit é privado)
 4. **Cria** `apps/` se não existir
 5. **Clona** `rafaelscosta/aiox-cockpit` em `apps/cockpit/`
-6. **Faz checkout** da versão escolhida (default: `v1.0.1-imersao`)
+6. **Faz checkout** da versão escolhida (default: `v1.0.3-imersao`)
 7. **Instala** dependências (`npm install` + `bun install`)
 8. **Cria** `.env.development` e `engine/.env` a partir dos `.env.example`
 9. **Imprime** próximos passos
@@ -64,7 +64,7 @@ npx github:rafaelscosta/aiox-installer [options]
 | Opção | Descrição |
 |-------|-----------|
 | `--target <path>` | Caminho explícito pro AIOS root (default: detectado do CWD) |
-| `--version <tag>` | Versão do cockpit a instalar (default: `v1.0.1-imersao`) |
+| `--version <tag>` | Versão do cockpit a instalar (default: `v1.0.3-imersao`) |
 | `--yes`, `-y` | Pula confirmações (útil pra CI ou re-runs) |
 | `--help`, `-h` | Mostra ajuda |
 
@@ -78,7 +78,7 @@ cd ~/projetos/meu-aios && npx github:rafaelscosta/aiox-installer
 npx github:rafaelscosta/aiox-installer --target ~/projetos/meu-aios --yes
 
 # Instala uma versão específica
-npx github:rafaelscosta/aiox-installer --version v1.1
+npx github:rafaelscosta/aiox-installer --version v1.0.3-imersao
 ```
 
 PowerShell:
@@ -96,7 +96,7 @@ Para atualizar o cockpit pra uma versão nova:
 
 ```bash
 cd ~/projetos/meu-aios
-npx github:rafaelscosta/aiox-installer --version v1.1
+npx github:rafaelscosta/aiox-installer --version v1.0.3-imersao
 ```
 
 Se `apps/cockpit/` já existir, o wizard pergunta se quer fazer `git fetch` +
@@ -150,7 +150,7 @@ npm --version
 bun --version
 ```
 
-O wizard v1.0.1 resolve comandos pelo `PATHEXT` do Windows, então executáveis
+O wizard v1.0.2 resolve comandos pelo `PATHEXT` do Windows, então executáveis
 como `npm.cmd` passam a ser detectados corretamente.
 
 ### `Permission denied` ao clonar
