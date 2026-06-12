@@ -5,6 +5,8 @@ const path = require('node:path');
 const test = require('node:test');
 
 const {
+  COCKPIT_REPO,
+  DEFAULT_VERSION,
   expandHome,
   getWindowsPathExt,
   parseArgs,
@@ -20,6 +22,24 @@ test('parseArgs supports target, version and yes flags', () => {
     version: 'v1.1',
     yes: true,
     help: false,
+    verify: false,
+    smoke: false,
+  });
+});
+
+test('defaults point to the published cockpit repository and release tag', () => {
+  assert.equal(COCKPIT_REPO, 'rafaelscosta/aiox-cockpit');
+  assert.equal(DEFAULT_VERSION, 'v1.0.6-imersao');
+});
+
+test('parseArgs supports verification modes', () => {
+  assert.deepEqual(parseArgs(['--target=~/aios', '--verify', '--smoke']), {
+    target: '~/aios',
+    version: null,
+    yes: false,
+    help: false,
+    verify: true,
+    smoke: true,
   });
 });
 

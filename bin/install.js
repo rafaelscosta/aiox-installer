@@ -5,8 +5,9 @@
  * Usage:
  *   npx github:rafaelscosta/aiox-installer
  *   npx github:rafaelscosta/aiox-installer --target /path/to/aios-project
- *   npx github:rafaelscosta/aiox-installer --version v1.0.5-imersao
+ *   npx github:rafaelscosta/aiox-installer --version v1.0.6-imersao
  *   npx github:rafaelscosta/aiox-installer --yes        (skip prompts)
+ *   npx github:rafaelscosta/aiox-installer --verify     (run full release gate)
  */
 
 'use strict';
@@ -18,7 +19,7 @@ const readline = require('node:readline');
 const { spawnSync } = require('node:child_process');
 
 const COCKPIT_REPO = 'rafaelscosta/aiox-cockpit';
-const DEFAULT_VERSION = 'v1.0.5-imersao';
+const DEFAULT_VERSION = 'v1.0.6-imersao';
 
 // ANSI colors
 const c = {
@@ -127,11 +128,13 @@ function spawnCommand(commandPath, args, opts = {}) {
 }
 
 function parseArgs(argv) {
-  const args = { target: null, version: null, yes: false, help: false };
+  const args = { target: null, version: null, yes: false, help: false, verify: false, smoke: false };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--help' || a === '-h') args.help = true;
     else if (a === '--yes' || a === '-y') args.yes = true;
+    else if (a === '--verify') args.verify = true;
+    else if (a === '--smoke') args.smoke = true;
     else if (a === '--target') args.target = argv[++i];
     else if (a.startsWith('--target=')) args.target = a.slice('--target='.length);
     else if (a === '--version') args.version = argv[++i];
@@ -149,6 +152,8 @@ Usage:
 Options:
   --target <path>    AIOS project root (default: detected from CWD)
   --version <tag>    Cockpit version (default: ${DEFAULT_VERSION})
+  --verify           Run full cockpit release validation after install
+  --smoke            Run build + smoke validation after install
   --yes, -y          Skip confirmations
   --help, -h         Show this help
 
@@ -160,6 +165,7 @@ Requirements:
 Examples:
   cd ~/my-aios-project && npx github:rafaelscosta/aiox-installer
   npx github:rafaelscosta/aiox-installer --target ~/my-aios-project --yes
+  npx github:rafaelscosta/aiox-installer --target ~/my-aios-project --yes --verify
 `);
 }
 
@@ -271,6 +277,22 @@ function printNextSteps(cockpitDir) {
   log('');
 }
 
+function runOptionalVerification(cockpitDir, mode) {
+  if (!mode) return;
+  if (mode === 'verify') {
+    info('Running full cockpit release validation...');
+    runInherit('npm', ['run', 'validate:release'], { cwd: cockpitDir });
+    ok('release validation passed');
+    return;
+  }
+
+  info('Running cockpit build before smoke validation...');
+  runInherit('npm', ['run', 'build'], { cwd: cockpitDir });
+  info('Running cockpit smoke validation...');
+  runInherit('npm', ['run', 'smoke'], { cwd: cockpitDir });
+  ok('smoke validation passed');
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) { printHelp(); return 0; }
@@ -279,7 +301,8 @@ async function main() {
   log(`${c.bold}${c.magenta}║${c.reset}  ${c.bold}AIOX Cockpit Installer${c.reset}                  ${c.bold}${c.magenta}║${c.reset}`);
   log(`${c.bold}${c.magenta}╚══════════════════════════════════════════╝${c.reset}`);
 
-  const TOTAL_STEPS = 7;
+  const verificationMode = args.verify ? 'verify' : args.smoke ? 'smoke' : null;
+  const TOTAL_STEPS = verificationMode ? 8 : 7;
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   let cleanedUp = false;
   const cleanup = () => { if (!cleanedUp) { rl.close(); cleanedUp = true; } };
@@ -312,6 +335,9 @@ async function main() {
     log(`  Install at:   ${c.bold}${cockpitDir}${c.reset}`);
     log(`  Cockpit repo: ${c.bold}${COCKPIT_REPO}${c.reset}`);
     log(`  Version:      ${c.bold}${version}${c.reset}`);
+    if (verificationMode) {
+      log(`  Verify mode:  ${c.bold}${verificationMode}${c.reset}`);
+    }
 
     if (!args.yes) {
       const proceed = await askYesNo(rl, 'Proceed?', true);
@@ -388,8 +414,13 @@ async function main() {
       path.join(cockpitDir, 'engine', '.env')
     );
 
-    // Step 7: done
-    step(7, TOTAL_STEPS, 'Done');
+    if (verificationMode) {
+      step(7, TOTAL_STEPS, verificationMode === 'verify' ? 'Running release validation' : 'Running smoke validation');
+      runOptionalVerification(cockpitDir, verificationMode);
+    }
+
+    // Final step: done
+    step(TOTAL_STEPS, TOTAL_STEPS, 'Done');
     ok(`Cockpit installed at: ${cockpitDir}`);
     printNextSteps(cockpitDir);
     return 0;
@@ -409,6 +440,8 @@ if (require.main === module) {
 }
 
 module.exports = {
+  COCKPIT_REPO,
+  DEFAULT_VERSION,
   expandHome,
   findAiosRoot,
   getWindowsPathExt,
