@@ -127,6 +127,29 @@ function spawnCommand(commandPath, args, opts = {}) {
   return spawnSync(commandPath, args, opts);
 }
 
+function runCapture(cmd, args, opts = {}) {
+  const commandPath = findCommand(cmd);
+  if (!commandPath) {
+    throw new Error(`Command not found: ${cmd}`);
+  }
+  const r = spawnCommand(commandPath, args, {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    encoding: 'utf8',
+    ...opts,
+  });
+  if (r.error) {
+    throw new Error(`Command failed to start: ${displayCommand(commandPath, cmd)} (${r.error.message})`);
+  }
+  if (r.signal) {
+    throw new Error(`Command terminated by signal ${r.signal}: ${cmd} ${args.join(' ')}`);
+  }
+  if (r.status !== 0) {
+    const details = [r.stdout, r.stderr].filter(Boolean).join('\n').trim();
+    throw new Error(`Command failed (exit ${r.status}): ${cmd} ${args.join(' ')}${details ? `\n${details}` : ''}`);
+  }
+  return r.stdout || '';
+}
+
 function parseArgs(argv) {
   const args = { target: null, version: null, yes: false, help: false, verify: false, smoke: false };
   for (let i = 0; i < argv.length; i++) {
@@ -236,6 +259,31 @@ function runInherit(cmd, args, opts = {}) {
   if (r.status !== 0) {
     throw new Error(`Command failed (exit ${r.status}): ${cmd} ${args.join(' ')}`);
   }
+}
+
+function getTrackedChangeSet(cwd) {
+  const output = [
+    runCapture('git', ['diff', '--name-only'], { cwd }),
+    runCapture('git', ['diff', '--cached', '--name-only'], { cwd }),
+  ].join('\n');
+
+  return new Set(output.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
+}
+
+function getGeneratedTrackedChanges(beforeChanges, afterChanges) {
+  return [...afterChanges].filter((file) => !beforeChanges.has(file)).sort();
+}
+
+function restoreGeneratedTrackedChanges(cockpitDir, beforeChanges) {
+  const afterChanges = getTrackedChangeSet(cockpitDir);
+  const generatedChanges = getGeneratedTrackedChanges(beforeChanges, afterChanges);
+  if (generatedChanges.length === 0) return [];
+
+  runInherit('git', ['restore', '--worktree', '--staged', '--', ...generatedChanges], {
+    cwd: cockpitDir,
+  });
+  ok(`Restored ${generatedChanges.length} generated tracked file(s) after install/validation`);
+  return generatedChanges;
 }
 
 function copyEnvIfMissing(src, dst) {
@@ -382,6 +430,8 @@ async function main() {
       }
     }
 
+    const trackedChangesBeforeInstall = getTrackedChangeSet(cockpitDir);
+
     // Step 5: install dependencies
     step(5, TOTAL_STEPS, 'Installing dependencies');
     info('Running npm install (root)...');
@@ -419,6 +469,8 @@ async function main() {
       runOptionalVerification(cockpitDir, verificationMode);
     }
 
+    restoreGeneratedTrackedChanges(cockpitDir, trackedChangesBeforeInstall);
+
     // Final step: done
     step(TOTAL_STEPS, TOTAL_STEPS, 'Done');
     ok(`Cockpit installed at: ${cockpitDir}`);
@@ -444,6 +496,7 @@ module.exports = {
   DEFAULT_VERSION,
   expandHome,
   findAiosRoot,
+  getGeneratedTrackedChanges,
   getWindowsPathExt,
   isWindows,
   parseArgs,

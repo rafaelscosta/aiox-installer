@@ -38,7 +38,8 @@ npx github:rafaelscosta/aiox-installer --target "C:\caminho\do\seu-projeto-aios"
 6. **Faz checkout** da versão escolhida (default: `v1.1.0-imersao`)
 7. **Instala** dependências (`npm install` + `bun install`)
 8. **Cria** `.env.development` e `engine/.env` a partir dos `.env.example`
-9. **Imprime** próximos passos
+9. **Restaura** alterações rastreadas geradas pela instalação/validação, preservando arquivos locais como `.env`
+10. **Imprime** próximos passos
 
 ## Pré-requisitos
 
@@ -69,6 +70,11 @@ npx github:rafaelscosta/aiox-installer [options]
 | `--smoke` | Roda `npm run build` + `npm run smoke` no cockpit após instalar |
 | `--yes`, `-y` | Pula confirmações (útil pra CI ou re-runs) |
 | `--help`, `-h` | Mostra ajuda |
+
+Após instalar, incluindo nos modos `--verify` e `--smoke`, o instalador mantém
+o clone rastreado do cockpit limpo de arquivos gerados pelo próprio processo.
+Arquivos locais não rastreados, como `.env.development` e `engine/.env`, são
+preservados.
 
 ### Exemplos
 

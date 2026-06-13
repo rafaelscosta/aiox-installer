@@ -8,6 +8,7 @@ const {
   COCKPIT_REPO,
   DEFAULT_VERSION,
   expandHome,
+  getGeneratedTrackedChanges,
   getWindowsPathExt,
   parseArgs,
   quoteWindowsCmdArg,
@@ -41,6 +42,19 @@ test('parseArgs supports verification modes', () => {
     verify: true,
     smoke: true,
   });
+});
+
+test('getGeneratedTrackedChanges only returns changes introduced after baseline', () => {
+  const baseline = new Set(['package-lock.json', 'src/user-change.ts']);
+  const afterInstall = new Set([
+    'package-lock.json',
+    'src/data/aios-registry.generated.ts',
+    'src/user-change.ts',
+  ]);
+
+  assert.deepEqual(getGeneratedTrackedChanges(baseline, afterInstall), [
+    'src/data/aios-registry.generated.ts',
+  ]);
 });
 
 test('stripWrappingQuotes removes matching shell quotes', () => {
