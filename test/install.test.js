@@ -28,8 +28,8 @@ test('parseArgs supports target, version and yes flags', () => {
 });
 
 test('defaults point to the published cockpit repository and release tag', () => {
-  assert.equal(COCKPIT_REPO, 'rafaelscosta/aiox-cockpit');
-  assert.equal(DEFAULT_VERSION, 'v1.0.6-imersao');
+  assert.equal(COCKPIT_REPO, 'AIOXsquad/aiox-cockpit-imersao');
+  assert.equal(DEFAULT_VERSION, 'v1.1.0-imersao');
 });
 
 test('parseArgs supports verification modes', () => {

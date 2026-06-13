@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.1.0
+
+Recommended installer release for Cockpit Imersão `v1.1.0-imersao`.
+
+- Updates the default cockpit repository to `AIOXsquad/aiox-cockpit-imersao`.
+- Updates the default cockpit tag to `v1.1.0-imersao`.
+- Keeps `--verify` and `--smoke` as the release validation modes for installed cockpits.
+- Updates docs and tests for the official Imersão release path.
+
 ## v1.0.5
 
 Recommended installer release for Cockpit Imersão `v1.0.6-imersao`.

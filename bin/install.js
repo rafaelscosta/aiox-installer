@@ -5,7 +5,7 @@
  * Usage:
  *   npx github:rafaelscosta/aiox-installer
  *   npx github:rafaelscosta/aiox-installer --target /path/to/aios-project
- *   npx github:rafaelscosta/aiox-installer --version v1.0.6-imersao
+ *   npx github:rafaelscosta/aiox-installer --version v1.1.0-imersao
  *   npx github:rafaelscosta/aiox-installer --yes        (skip prompts)
  *   npx github:rafaelscosta/aiox-installer --verify     (run full release gate)
  */
@@ -18,8 +18,8 @@ const path = require('node:path');
 const readline = require('node:readline');
 const { spawnSync } = require('node:child_process');
 
-const COCKPIT_REPO = 'rafaelscosta/aiox-cockpit';
-const DEFAULT_VERSION = 'v1.0.6-imersao';
+const COCKPIT_REPO = 'AIOXsquad/aiox-cockpit-imersao';
+const DEFAULT_VERSION = 'v1.1.0-imersao';
 
 // ANSI colors
 const c = {
