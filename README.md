@@ -8,7 +8,7 @@ setup de `.env`s.
 
 ```bash
 cd /caminho/do/seu-projeto-aios
-npx github:rafaelscosta/aiox-installer
+npx -y github:rafaelscosta/aiox-installer#v1.1.1
 ```
 
 Isso é tudo. O wizard guia o resto.
@@ -19,13 +19,13 @@ Use PowerShell e mantenha caminhos com espaços entre aspas:
 
 ```powershell
 Set-Location -LiteralPath "C:\caminho\do\seu-projeto-aios"
-npx github:rafaelscosta/aiox-installer
+npx -y github:rafaelscosta/aiox-installer#v1.1.1
 ```
 
 Também funciona passando o target explicitamente:
 
 ```powershell
-npx github:rafaelscosta/aiox-installer --target "C:\caminho\do\seu-projeto-aios" --yes
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 --target "C:\caminho\do\seu-projeto-aios" --yes
 ```
 
 ## O que ele faz
@@ -59,7 +59,7 @@ para garantir que o `PATH` novo foi carregado.
 ## Opções
 
 ```bash
-npx github:rafaelscosta/aiox-installer [options]
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 [options]
 ```
 
 | Opção | Descrição |
@@ -80,25 +80,25 @@ preservados.
 
 ```bash
 # Auto-detecta projeto AIOS no CWD
-cd ~/projetos/meu-aios && npx github:rafaelscosta/aiox-installer
+cd ~/projetos/meu-aios && npx -y github:rafaelscosta/aiox-installer#v1.1.1
 
 # Especifica target e pula prompts
-npx github:rafaelscosta/aiox-installer --target ~/projetos/meu-aios --yes
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 --target ~/projetos/meu-aios --yes
 
 # Instala uma versão específica
-npx github:rafaelscosta/aiox-installer --version v1.1.0-imersao
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 --version v1.1.0-imersao
 
 # Instala e valida tudo em seguida
-npx github:rafaelscosta/aiox-installer --target ~/projetos/meu-aios --yes --verify
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 --target ~/projetos/meu-aios --yes --verify
 ```
 
 PowerShell:
 
 ```powershell
 Set-Location -LiteralPath "C:\projetos\meu-aios"
-npx github:rafaelscosta/aiox-installer
+npx -y github:rafaelscosta/aiox-installer#v1.1.1
 
-npx github:rafaelscosta/aiox-installer --target "C:\projetos\meu-aios" --yes
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 --target "C:\projetos\meu-aios" --yes
 ```
 
 ## Atualização
@@ -107,7 +107,7 @@ Para atualizar o cockpit pra uma versão nova:
 
 ```bash
 cd ~/projetos/meu-aios
-npx github:rafaelscosta/aiox-installer --version v1.1.0-imersao
+npx -y github:rafaelscosta/aiox-installer#v1.1.1 --version v1.1.0-imersao
 ```
 
 Se `apps/cockpit/` já existir, o wizard pergunta se quer fazer `git fetch` +
@@ -161,7 +161,7 @@ npm --version
 bun --version
 ```
 
-O wizard v1.1.0 resolve comandos pelo `PATHEXT` do Windows, então executáveis
+O wizard v1.1.1 resolve comandos pelo `PATHEXT` do Windows, então executáveis
 como `npm.cmd` passam a ser detectados corretamente.
 
 ### `Permission denied` ao clonar
