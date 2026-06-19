@@ -8,7 +8,7 @@ setup de `.env`s.
 
 ```bash
 cd /caminho/do/seu-projeto-aios
-npx -y github:rafaelscosta/aiox-installer#v1.1.2
+npx -y github:rafaelscosta/aiox-installer#v1.1.3
 ```
 
 Isso é tudo. O wizard guia o resto.
@@ -19,13 +19,13 @@ Use PowerShell e mantenha caminhos com espaços entre aspas:
 
 ```powershell
 Set-Location -LiteralPath "C:\caminho\do\seu-projeto-aios"
-npx -y github:rafaelscosta/aiox-installer#v1.1.2
+npx -y github:rafaelscosta/aiox-installer#v1.1.3
 ```
 
 Também funciona passando o target explicitamente:
 
 ```powershell
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 --target "C:\caminho\do\seu-projeto-aios" --yes
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 --target "C:\caminho\do\seu-projeto-aios" --yes
 ```
 
 ## O que ele faz
@@ -35,7 +35,7 @@ npx -y github:rafaelscosta/aiox-installer#v1.1.2 --target "C:\caminho\do\seu-pro
 3. **Verifica** que `gh` CLI está autenticado (necessário porque o repo do cockpit é privado)
 4. **Cria** `apps/` se não existir
 5. **Clona** `AIOXsquad/aiox-cockpit-imersao` em `apps/cockpit/`
-6. **Faz checkout** da versão escolhida (default: `v1.1.1-imersao`)
+6. **Faz checkout** da versão escolhida (default: `v1.1.2-imersao`)
 7. **Instala** dependências (`npm install` + `bun install`)
 8. **Cria** `.env.development` e `engine/.env` a partir dos `.env.example`
 9. **Restaura** alterações rastreadas geradas pela instalação/validação, preservando arquivos locais como `.env`
@@ -59,13 +59,13 @@ para garantir que o `PATH` novo foi carregado.
 ## Opções
 
 ```bash
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 [options]
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 [options]
 ```
 
 | Opção | Descrição |
 |-------|-----------|
 | `--target <path>` | Caminho explícito pro AIOS root (default: detectado do CWD) |
-| `--version <tag>` | Versão do cockpit a instalar (default: `v1.1.1-imersao`) |
+| `--version <tag>` | Versão do cockpit a instalar (default: `v1.1.2-imersao`) |
 | `--verify` | Roda `npm run validate:release` no cockpit após instalar |
 | `--smoke` | Roda `npm run build` + `npm run smoke` no cockpit após instalar |
 | `--yes`, `-y` | Pula confirmações (útil pra CI ou re-runs) |
@@ -80,25 +80,25 @@ preservados.
 
 ```bash
 # Auto-detecta projeto AIOS no CWD
-cd ~/projetos/meu-aios && npx -y github:rafaelscosta/aiox-installer#v1.1.2
+cd ~/projetos/meu-aios && npx -y github:rafaelscosta/aiox-installer#v1.1.3
 
 # Especifica target e pula prompts
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 --target ~/projetos/meu-aios --yes
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 --target ~/projetos/meu-aios --yes
 
 # Instala uma versão específica
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 --version v1.1.1-imersao
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 --version v1.1.2-imersao
 
 # Instala e valida tudo em seguida
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 --target ~/projetos/meu-aios --yes --verify
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 --target ~/projetos/meu-aios --yes --verify
 ```
 
 PowerShell:
 
 ```powershell
 Set-Location -LiteralPath "C:\projetos\meu-aios"
-npx -y github:rafaelscosta/aiox-installer#v1.1.2
+npx -y github:rafaelscosta/aiox-installer#v1.1.3
 
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 --target "C:\projetos\meu-aios" --yes
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 --target "C:\projetos\meu-aios" --yes
 ```
 
 ## Atualização
@@ -107,7 +107,7 @@ Para atualizar o cockpit pra uma versão nova:
 
 ```bash
 cd ~/projetos/meu-aios
-npx -y github:rafaelscosta/aiox-installer#v1.1.2 --version v1.1.1-imersao
+npx -y github:rafaelscosta/aiox-installer#v1.1.3 --version v1.1.2-imersao
 ```
 
 Se `apps/cockpit/` já existir, o wizard pergunta se quer fazer `git fetch` +
