@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.1.3
+
+Recommended installer release for Cockpit Imersão `v1.1.2-imersao`.
+
+- Bumps the default cockpit tag to `v1.1.2-imersao` (Squads/Agents views now reflect the operator's real squads via runtime scan).
+- Adds an expectation note to the post-install output: Dashboard/Stories/Vault/Squads read the operator's project; Chat and agent execution are demonstrative; real operation happens in the Claude Code terminal.
+- Updates docs to install via `#v1.1.3`.
+
 ## v1.1.2
 
 Recommended installer release for Cockpit Imersão `v1.1.1-imersao`.

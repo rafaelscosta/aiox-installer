@@ -5,7 +5,7 @@
  * Usage:
  *   npx github:rafaelscosta/aiox-installer
  *   npx github:rafaelscosta/aiox-installer --target /path/to/aios-project
- *   npx github:rafaelscosta/aiox-installer --version v1.1.1-imersao
+ *   npx github:rafaelscosta/aiox-installer --version v1.1.2-imersao
  *   npx github:rafaelscosta/aiox-installer --yes        (skip prompts)
  *   npx github:rafaelscosta/aiox-installer --verify     (run full release gate)
  */
@@ -19,7 +19,7 @@ const readline = require('node:readline');
 const { spawnSync } = require('node:child_process');
 
 const COCKPIT_REPO = 'AIOXsquad/aiox-cockpit-imersao';
-const DEFAULT_VERSION = 'v1.1.1-imersao';
+const DEFAULT_VERSION = 'v1.1.2-imersao';
 
 // ANSI colors
 const c = {
@@ -322,6 +322,11 @@ function printNextSteps(cockpitDir) {
   } else {
     log(`Port :4002 occupied? Override with ${c.cyan}ENGINE_PORT=4042 npm run dev${c.reset}.`);
   }
+  log('');
+  log(`${c.bold}O que esperar (Edição Imersão):${c.reset}`);
+  log(`  - Dashboard, Stories, Vault e Squads leem o SEU projeto AIOS.`);
+  log(`  - Chat e execução de agentes são ${c.bold}demonstrativos${c.reset} — esta edição não roda agentes.`);
+  log(`  - Para operar de verdade, use os agentes no terminal do Claude Code (@dev, @qa, @devops...).`);
   log('');
 }
 
