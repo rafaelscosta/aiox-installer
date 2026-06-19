@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.1.2
+
+Recommended installer release for Cockpit Imersão `v1.1.1-imersao`.
+
+- Bumps the default cockpit tag to `v1.1.1-imersao` (public-server respects `AIOS_ROOT` and detects the `claude` CLI — eliminates the manual per-install patch for Stories/Vault/registry and the LLM health badge).
+- Updates docs to install via `#v1.1.2`.
+
 ## v1.1.1
 
 Patch release for Cockpit Imersão `v1.1.0-imersao`.
