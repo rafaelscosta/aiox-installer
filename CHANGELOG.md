@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.0
+
+AIOX Dashboard S0 installer release.
+
+- Product rename: installs **AIOX Dashboard** (not native AIOX Cockpit desktop app).
+- Default repo: `rafaelscosta/aiox-dashboard`.
+- Default tag: **`v1.0.1-public`** (S0 + minimal-host fail-soft boot).
+- Docs and tests updated for the Dashboard public train (EPIC-221).
+
 ## v1.1.3
 
 Recommended installer release for Cockpit Imersão `v1.1.2-imersao`.

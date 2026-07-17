@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /**
- * AIOX Cockpit Installer Wizard
+ * AIOX Dashboard Installer Wizard
+ *
+ * Product: AIOX Dashboard (web SPA + engine) — NOT the native AIOX Cockpit desktop app.
+ * Public repo: rafaelscosta/aiox-dashboard
  *
  * Usage:
  *   npx github:rafaelscosta/aiox-installer
  *   npx github:rafaelscosta/aiox-installer --target /path/to/aios-project
- *   npx github:rafaelscosta/aiox-installer --version v1.1.2-imersao
+ *   npx github:rafaelscosta/aiox-installer --version v1.0.0-public
  *   npx github:rafaelscosta/aiox-installer --yes        (skip prompts)
  *   npx github:rafaelscosta/aiox-installer --verify     (run full release gate)
  */
@@ -18,8 +21,11 @@ const path = require('node:path');
 const readline = require('node:readline');
 const { spawnSync } = require('node:child_process');
 
-const COCKPIT_REPO = 'AIOXsquad/aiox-cockpit-imersao';
-const DEFAULT_VERSION = 'v1.1.2-imersao';
+/** @deprecated use DASHBOARD_REPO — kept as alias for tests/compat */
+const COCKPIT_REPO = 'rafaelscosta/aiox-dashboard';
+const DASHBOARD_REPO = 'rafaelscosta/aiox-dashboard';
+const DEFAULT_VERSION = 'v1.0.1-public';
+const PRODUCT_NAME = 'AIOX Dashboard';
 
 // ANSI colors
 const c = {
@@ -167,28 +173,31 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  log(`${c.bold}AIOX Cockpit Installer${c.reset}
+  log(`${c.bold}AIOX Dashboard Installer${c.reset}
+
+Installs the ${PRODUCT_NAME} (web SPA + engine) into your AIOX/AIOS project.
+Does NOT install the native desktop AIOX Cockpit (SynkraAI/aiox-cockpit).
 
 Usage:
   npx github:rafaelscosta/aiox-installer [options]
 
 Options:
-  --target <path>    AIOS project root (default: detected from CWD)
-  --version <tag>    Cockpit version (default: ${DEFAULT_VERSION})
-  --verify           Run full cockpit release validation after install
+  --target <path>    AIOX project root (default: detected from CWD)
+  --version <tag>    Dashboard version (default: ${DEFAULT_VERSION})
+  --verify           Run release validation after install
   --smoke            Run build + smoke validation after install
   --yes, -y          Skip confirmations
   --help, -h         Show this help
 
 Requirements:
   - Node.js 18+
-  - GitHub CLI authenticated (run 'gh auth login' once)
+  - GitHub CLI authenticated (run 'gh auth login' once) for private repo access
   - Bun 1+ (for the engine — installer will warn if missing)
 
 Examples:
-  cd ~/my-aios-project && npx github:rafaelscosta/aiox-installer
-  npx github:rafaelscosta/aiox-installer --target ~/my-aios-project --yes
-  npx github:rafaelscosta/aiox-installer --target ~/my-aios-project --yes --verify
+  cd ~/my-aiox-project && npx github:rafaelscosta/aiox-installer
+  npx github:rafaelscosta/aiox-installer --target ~/my-aiox-project --yes
+  npx github:rafaelscosta/aiox-installer --version v1.0.0-public --yes
 `);
 }
 
@@ -306,7 +315,7 @@ function printNextSteps(cockpitDir) {
   log(`  1. Edit credentials:`);
   log(`     ${c.dim}${path.join(cockpitDir, '.env.development')}${c.reset}`);
   log(`     ${c.dim}${path.join(cockpitDir, 'engine', '.env')}${c.reset}`);
-  log(`  2. Start the cockpit:`);
+  log(`  2. Start the ${PRODUCT_NAME}:`);
   if (isWindows()) {
     log(`     ${c.cyan}Set-Location -LiteralPath "${cockpitDir}"${c.reset}`);
     log(`     ${c.cyan}npm run dev${c.reset}`);
@@ -351,7 +360,7 @@ async function main() {
   if (args.help) { printHelp(); return 0; }
 
   log(`${c.bold}${c.magenta}╔══════════════════════════════════════════╗${c.reset}`);
-  log(`${c.bold}${c.magenta}║${c.reset}  ${c.bold}AIOX Cockpit Installer${c.reset}                  ${c.bold}${c.magenta}║${c.reset}`);
+  log(`${c.bold}${c.magenta}║${c.reset}  ${c.bold}AIOX Dashboard Installer${c.reset}                ${c.bold}${c.magenta}║${c.reset}`);
   log(`${c.bold}${c.magenta}╚══════════════════════════════════════════╝${c.reset}`);
 
   const verificationMode = args.verify ? 'verify' : args.smoke ? 'smoke' : null;
@@ -382,11 +391,13 @@ async function main() {
 
     // Step 2: confirm with user
     step(2, TOTAL_STEPS, 'Confirming target');
+    // Install path stays apps/cockpit (legacy folder name; product = AIOX Dashboard)
     const cockpitDir = path.join(aiosRoot, 'apps', 'cockpit');
     const version = args.version || DEFAULT_VERSION;
-    log(`  AIOS root:    ${c.bold}${aiosRoot}${c.reset}`);
+    log(`  Product:      ${c.bold}${PRODUCT_NAME}${c.reset}`);
+    log(`  AIOX root:    ${c.bold}${aiosRoot}${c.reset}`);
     log(`  Install at:   ${c.bold}${cockpitDir}${c.reset}`);
-    log(`  Cockpit repo: ${c.bold}${COCKPIT_REPO}${c.reset}`);
+    log(`  Repo:         ${c.bold}${DASHBOARD_REPO}${c.reset}`);
     log(`  Version:      ${c.bold}${version}${c.reset}`);
     if (verificationMode) {
       log(`  Verify mode:  ${c.bold}${verificationMode}${c.reset}`);
@@ -402,7 +413,7 @@ async function main() {
     const gh = checkGhAuth();
     if (!gh.ok) {
       err(gh.reason);
-      err('The cockpit repo is private. Authenticate with the GitHub account that has read access:');
+      err('The AIOX Dashboard repo may be private. Authenticate with an account that has read access:');
       err('  gh auth login');
       return 1;
     }
@@ -412,7 +423,7 @@ async function main() {
     }
 
     // Step 4: clone (or update)
-    step(4, TOTAL_STEPS, `Cloning ${COCKPIT_REPO} into apps/cockpit/`);
+    step(4, TOTAL_STEPS, `Cloning ${DASHBOARD_REPO} into apps/cockpit/ (${PRODUCT_NAME})`);
     fs.mkdirSync(path.join(aiosRoot, 'apps'), { recursive: true });
 
     if (fs.existsSync(cockpitDir)) {
@@ -425,7 +436,7 @@ async function main() {
         ok(`Checked out ${version}`);
       }
     } else {
-      runInherit('gh', ['repo', 'clone', COCKPIT_REPO, cockpitDir]);
+      runInherit('gh', ['repo', 'clone', DASHBOARD_REPO, cockpitDir]);
       try {
         runInherit('git', ['checkout', version], { cwd: cockpitDir });
         ok(`Checked out ${version}`);
@@ -478,7 +489,7 @@ async function main() {
 
     // Final step: done
     step(TOTAL_STEPS, TOTAL_STEPS, 'Done');
-    ok(`Cockpit installed at: ${cockpitDir}`);
+    ok(`${PRODUCT_NAME} installed at: ${cockpitDir}`);
     printNextSteps(cockpitDir);
     return 0;
   } catch (e) {
@@ -498,7 +509,9 @@ if (require.main === module) {
 
 module.exports = {
   COCKPIT_REPO,
+  DASHBOARD_REPO,
   DEFAULT_VERSION,
+  PRODUCT_NAME,
   expandHome,
   findAiosRoot,
   getGeneratedTrackedChanges,

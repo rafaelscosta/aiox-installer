@@ -28,9 +28,9 @@ test('parseArgs supports target, version and yes flags', () => {
   });
 });
 
-test('defaults point to the published cockpit repository and release tag', () => {
-  assert.equal(COCKPIT_REPO, 'AIOXsquad/aiox-cockpit-imersao');
-  assert.equal(DEFAULT_VERSION, 'v1.1.2-imersao');
+test('defaults point to the published AIOX Dashboard repository and S0 tag', () => {
+  assert.equal(COCKPIT_REPO, 'rafaelscosta/aiox-dashboard');
+  assert.equal(DEFAULT_VERSION, 'v1.0.1-public');
 });
 
 test('parseArgs supports verification modes', () => {
