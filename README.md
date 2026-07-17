@@ -27,7 +27,7 @@ npx -y github:rafaelscosta/aiox-installer
 3. Verifies `gh` CLI auth (repo may be private)
 4. Creates `apps/` if needed
 5. Clones `rafaelscosta/aiox-dashboard` into `apps/cockpit/` (legacy folder name)
-6. Checks out the release tag (default: **`v1.0.1-public`** — S0 + minimal-host boot fix)
+6. Checks out the release tag (default: **`v1.1.0-public`** — S1 catalogs + registries)
 7. Runs `npm install` + `bun install`
 8. Creates `.env.development` and `engine/.env` from examples
 9. Prints next steps
@@ -45,7 +45,7 @@ npx -y github:rafaelscosta/aiox-installer
 | Option | Description |
 |--------|-------------|
 | `--target <path>` | Explicit AIOX root |
-| `--version <tag>` | Dashboard tag (default: `v1.0.1-public`) |
+| `--version <tag>` | Dashboard tag (default: `v1.1.0-public`) |
 | `--verify` | Run `validate:release` after install |
 | `--smoke` | Run `build` + `smoke` after install |
 | `--yes`, `-y` | Non-interactive |
@@ -54,7 +54,7 @@ npx -y github:rafaelscosta/aiox-installer
 
 ```bash
 npx -y github:rafaelscosta/aiox-installer --yes
-npx -y github:rafaelscosta/aiox-installer --version v1.0.1-public --yes
+npx -y github:rafaelscosta/aiox-installer --version v1.1.0-public --yes
 npx -y github:rafaelscosta/aiox-installer --target ~/my-aiox --yes --smoke
 ```
 

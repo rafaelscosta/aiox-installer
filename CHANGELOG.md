@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 — 2026-07-17
+
+- Default dashboard tag → **`v1.1.0-public`** (S1: catalogs + registries)
+- S0 tags (`v1.0.0-public`, `v1.0.1-public`) still installable via `--version`
+
 ## v1.2.0
 
 AIOX Dashboard S0 installer release.

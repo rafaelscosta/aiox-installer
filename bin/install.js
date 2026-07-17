@@ -24,7 +24,7 @@ const { spawnSync } = require('node:child_process');
 /** @deprecated use DASHBOARD_REPO — kept as alias for tests/compat */
 const COCKPIT_REPO = 'rafaelscosta/aiox-dashboard';
 const DASHBOARD_REPO = 'rafaelscosta/aiox-dashboard';
-const DEFAULT_VERSION = 'v1.0.1-public';
+const DEFAULT_VERSION = 'v1.1.0-public';
 const PRODUCT_NAME = 'AIOX Dashboard';
 
 // ANSI colors
